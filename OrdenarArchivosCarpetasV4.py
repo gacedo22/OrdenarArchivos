@@ -78,6 +78,6 @@ for carpeta, archivos in archivos_por_carpeta.items():
         shutil.move(origen, destino)
 
         # Guardar en el log con fecha y hora, usando variables reales
-        with open(os.path.join(ruta, "LogsMovimientos.txt"), "a", encoding="utf-8") as log:
+        with open(os.path.join(ruta, "LogsMovimientos.txt"), "a", encoding="utf-8") as log:#"a" es la expresión para append y agregar texto al archivo
             log.write(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - Movido: {archivo} ---->Usuario:{usuario} ---->{destino}\n")
 

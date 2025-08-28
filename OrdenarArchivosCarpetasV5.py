@@ -1,11 +1,19 @@
-#Versión solo creando las carpetas que necesito
+# Versión con ventana emergente para introducir carpeta, generar logs de modificación, usuario y subcarpetas por fechas
 
-
+from tkinter import Tk, filedialog
 import os
 import shutil
+from datetime import datetime
+import getpass
 
-# Ruta donde están los archivos a ordenar
-ruta = "C:/Documentos/Cosas de niños"
+#Obtener el usuario
+
+usuario=getpass.getuser()
+
+# Crear ventana oculta para elegir carpeta
+ventana = Tk()
+ventana.withdraw()
+ruta = filedialog.askdirectory(title="Seleccionar Carpeta a Ordenar")
 
 # Diccionario de extensiones asociadas a carpetas
 extensiones = {
@@ -62,20 +70,22 @@ for carpeta in archivos_por_carpeta:
     if not os.path.exists(ruta_carpeta):
         os.makedirs(ruta_carpeta)
 
-# 3. Movemos los archivos a sus carpetas correspondientes
+# 3. Movemos los archivos y registramos en el log
 for carpeta, archivos in archivos_por_carpeta.items():
     for archivo in archivos:
         origen = os.path.join(ruta, archivo)
-        destino = os.path.join(ruta, carpeta, archivo)
-        # Si el archivo ya existe en destino, renombrar agregando un sufijo
-        if os.path.exists(destino):
-            nombre, ext = os.path.splitext(archivo)
-            contador = 1
-            nuevo_destino = os.path.join(ruta, carpeta, f"{nombre}_{contador}{ext}")
-            while os.path.exists(nuevo_destino):
-                contador += 1
-                nuevo_destino = os.path.join(ruta, carpeta, f"{nombre}_{contador}{ext}")
-            destino = nuevo_destino
-        shutil.move(origen, destino)
+        #destino = os.path.join(ruta, carpeta, archivo)
 
-print("Archivos organizados correctamente.")
+        #Obtener la fecha de última modificación del archivo
+        fecha_modificacion = datetime.fromtimestamp(os.path.getmtime(origen))
+        subcarpeta_fecha = fecha_modificacion.strftime("%Y-%m")#Formato Año-Mes
+        ruta_subcarpeta = os.path.join(ruta, carpeta, subcarpeta_fecha)
+
+        
+
+        shutil.move(origen, ruta_subcarpeta if os.path.exists(ruta_subcarpeta) else os.makedirs(ruta_subcarpeta) or os.path.join(ruta, carpeta, subcarpeta_fecha, archivo))
+
+        # Guardar en el log con fecha y hora, usando variables reales
+        with open(os.path.join(ruta, "LogsMovimientos.txt"), "a", encoding="utf-8") as log:#"a" es la expresión para append y agregar texto al archivo
+            log.write(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} - Movido: {archivo} ---->Usuario:{usuario} ---->{ruta_subcarpeta}\n")
+
